@@ -1,0 +1,9 @@
+{application,activemq_msg_forwarder,
+             [{config_mtime,1734416021},
+              {optional_applications,[]},
+              {applications,[kernel,stdlib,elixir,logger,stomp_client]},
+              {description,"activemq_msg_forwarder"},
+              {modules,['Elixir.ActiveMQForwarder',
+                        'Elixir.MyApp.Application']},
+              {registered,[]},
+              {vsn,"0.2.1"}]}.
