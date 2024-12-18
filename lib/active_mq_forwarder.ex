@@ -21,14 +21,12 @@ defmodule ActiveMQForwarder do
       id: 123
     ]
     # Connect to the ActiveMQ broker
-    case StompClient.connect(options) do
+    case StompClient.connect(options, callback_handler: self()) do
       pid when is_pid(pid) ->
         IO.puts("Connected successfully to ActiveMQ: #{inspect(pid)}")
         Logger.info("Connected to ActiveMQ STOMP broker")
         subscribe_to_source(pid)
         listen_for_messages(pid)
-      unexpected ->
-          IO.puts("Failed to connect to ActiveMQ. Response: #{inspect(unexpected)}")
     end
 
     # Keep the process alive
@@ -46,12 +44,14 @@ defmodule ActiveMQForwarder do
   defp listen_for_messages(pid) do
     Logger.info("Inside listen for msg to #{inspect(pid)}")
     receive do
-      {:stomp_message, headers, body} ->
-        Logger.info("Received message: #{body} with headers: #{inspect(headers)}")
+      {:stomp_client, :on_message, %{"body" => body} = message} ->
+        Logger.info("Received message from source queue: #{inspect(message)}")
+        Logger.info("Extracted message body: #{body}")
         forward_message(pid, body)
         listen_for_messages(pid)
-      {:stomp_error, reason} ->
-        Logger.error("STOMP error occurred: #{inspect(reason)}")
+      other ->
+        IO.inspect(other, label: "received other message from source queue")
+        listen_for_messages(pid)
     end
   end
 
